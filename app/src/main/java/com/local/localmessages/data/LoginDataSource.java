@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.local.localmessages.dto.UserDTO;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -31,10 +32,12 @@ public class LoginDataSource {
                 .url(Config.API+"/login")
                 .post(formBody)
                 .build();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 System.out.println(e);
+                countDownLatch.countDown();
             }
 
             @Override
@@ -42,13 +45,18 @@ public class LoginDataSource {
                 String body =response.body().string();
                 ObjectMapper mapper = new ObjectMapper();
                 UserDTO user = mapper.readValue(body,UserDTO.class);
-                System.out.println(user.getUsername());
-                Config.currentUser=new LoggedInUser(String.valueOf(user.getId()),user.getUsername());
-                LoginDataSource.setLoggedInUserResult(Config.currentUser);
+                if(user.getUsername()!=null) {
+                    Config.currentUser = new LoggedInUser(String.valueOf(user.getId()), user.getUsername());
+                    LoginDataSource.setLoggedInUserResult(Config.currentUser);
+                }else
+                    LoginDataSource.setLoggedInUserResult(null);
+                countDownLatch.countDown();
             }
         });
+
         try {
-            Thread.sleep(10000);
+            countDownLatch.await();
+            return loggedInUserResult;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -56,7 +64,8 @@ public class LoginDataSource {
     }
 
     private static void setLoggedInUserResult(LoggedInUser user){
-        loggedInUserResult=new Result.Success<>(user);
+        if(user!=null) loggedInUserResult=new Result.Success<>(user);
+        else loggedInUserResult= new Result.Error(null);
     }
 
     public void logout() {
