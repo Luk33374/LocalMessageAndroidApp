@@ -1,0 +1,53 @@
+package com.local.localmessages.ui.main;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.local.localmessages.R;
+import com.local.localmessages.data.model.Conversation;
+
+public class RecyclerViewAdapterForConversation extends RecyclerView.Adapter<RecyclerViewAdapterForConversation.ViewHolder> {
+    private Context mContext;
+    private Conversation conversation;
+
+    public RecyclerViewAdapterForConversation(Context mContext, Conversation conversation) {
+        this.mContext = mContext;
+        this.conversation = conversation;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_list_item,parent,false);
+        ViewHolder holder= new ViewHolder(view);
+        return holder;
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        final String lastMessageOfConversation=conversation.getMessagesInConversation().get(position).getMessageContent();
+        holder.userName.setText(lastMessageOfConversation);
+    }
+
+    @Override
+    public int getItemCount() {
+        return conversation.getMessagesInConversation().size();
+    }
+    class ViewHolder extends RecyclerView.ViewHolder{
+        TextView userName;
+        RelativeLayout relativeLayout;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            userName= itemView.findViewById(R.id.messageFromUser);
+            relativeLayout= itemView.findViewById(R.id.conversation);
+        }
+    }
+}

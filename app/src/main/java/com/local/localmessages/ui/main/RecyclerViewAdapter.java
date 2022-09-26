@@ -1,23 +1,25 @@
 package com.local.localmessages.ui.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.local.localmessages.R;
+import com.local.localmessages.data.model.Conversation;
+import com.local.localmessages.services.MessageService;
 
 import java.util.ArrayList;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>{
-    private static final String TAG = "RecyclerViewAdapter";
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
     private ArrayList<String> userNames=new ArrayList<>();
+    private final MessageService messageService = new MessageService();
     private Context mContext;
 
     public RecyclerViewAdapter(ArrayList<String> userNames, Context mContext) {
@@ -35,11 +37,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.userName.setText(userNames.get(position));
+        final String lastMessageOfConversation=userNames.get(position);
+        holder.userName.setText(lastMessageOfConversation);
         holder.userName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(mContext,"aaaa",Toast.LENGTH_SHORT).show();
+                Conversation conversationBasedOfLastMessage = messageService
+                        .getConversationBasedOfLastMessage(lastMessageOfConversation);
+                Intent selectedConversation = new Intent(mContext , ConversationView.class);
+                selectedConversation.putExtra("Conversation",conversationBasedOfLastMessage);
+                mContext.startActivity(selectedConversation);
+                //Toast.makeText(mContext,conversationBasedOfLastMessage.getMessagesInConversation().toString(),Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -1,16 +1,19 @@
 package com.local.localmessages.data.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class Conversation {
-    private Set<Message> messagesInConversation;
+public class Conversation implements Serializable {
+    private List<Message> messagesInConversation;
 
-    public Conversation(HashSet<Message> messagesInConversation) {
+    public Conversation(ArrayList<Message> messagesInConversation) {
         this.messagesInConversation= messagesInConversation;
     }
 
-    public Set<Message> getMessagesInConversation() {
+    public List<Message> getMessagesInConversation() {
         return messagesInConversation;
     }
 

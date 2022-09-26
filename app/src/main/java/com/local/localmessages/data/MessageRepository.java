@@ -1,6 +1,9 @@
 package com.local.localmessages.data;
 
+import android.os.Build;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +11,8 @@ import com.local.localmessages.Config;
 import com.local.localmessages.data.model.Message;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.concurrent.CountDownLatch;
 
 import okhttp3.Call;
@@ -18,7 +23,43 @@ import okhttp3.Response;
 
 public class MessageRepository {
     private static Message[] messages;
+    private static String user;
     private final OkHttpClient client = new OkHttpClient();
+
+    public String getUserWithId(Long userId){
+        Request request = new Request.Builder()
+                .url(Config.API+"/getUserNameWithUserId/"+userId)
+                .build();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                System.out.println(e);
+                countDownLatch.countDown();
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                String message =response.body().string();
+                if(message.length()>0) {
+                    user=message;
+                    countDownLatch.countDown();
+                }else {
+                    user="Error";
+                    countDownLatch.countDown();
+                }
+            }
+        });
+
+        try {
+            countDownLatch.await();
+            return user;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
 
     public Message[] getMessagesFromServer(Long userId) {
         Request request = new Request.Builder()
@@ -32,6 +73,7 @@ public class MessageRepository {
                 countDownLatch.countDown();
             }
 
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 String body =response.body().string();
@@ -42,9 +84,10 @@ public class MessageRepository {
                 if(message.length>0) {
                     setMessages(message);
                     countDownLatch.countDown();
-                }else
-
-                countDownLatch.countDown();
+                }else {
+                    setMessages(new Message[]{new Message(0l, "No messages", 0l, 0l, LocalDate.now(), LocalTime.now())});
+                    countDownLatch.countDown();
+                }
             }
         });
 
