@@ -27,7 +27,15 @@ public class MessageService {
         for (int i=0;i<messages.length;i++){
 
             if(conversations.get(messages[i].getFromUser())==null) {
-                conversations.put(messages[i].getFromUser(), new Conversation(new ArrayList<>(Arrays.asList(messages[i]))));
+                if(messages[i].getFromUser().equals(Long.parseLong(Config.currentUser.getUserId()))){
+                    if(conversations.get(messages[i].getUserId())==null)
+                        conversations.put(messages[i].getUserId(), new Conversation(new ArrayList<>(Arrays.asList(messages[i]))));
+                    else {
+                        Conversation existingConversation= conversations.get(messages[i].getUserId());
+                        existingConversation.setMessagesInConversation(messages[i]);
+                        conversations.put(messages[i].getUserId(),existingConversation);
+                    }
+                } else conversations.put(messages[i].getFromUser(), new Conversation(new ArrayList<>(Arrays.asList(messages[i]))));
             }else{
                 Conversation existingConversation= conversations.get(messages[i].getFromUser());
                 existingConversation.setMessagesInConversation(messages[i]);
