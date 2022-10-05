@@ -20,4 +20,8 @@ public class Conversation implements Serializable {
     public void setMessagesInConversation(Message messagesInConversation) {
         this.messagesInConversation.add(messagesInConversation);
     }
+
+    public void addMessage(Message message){
+        messagesInConversation.add(message);
+    }
 }

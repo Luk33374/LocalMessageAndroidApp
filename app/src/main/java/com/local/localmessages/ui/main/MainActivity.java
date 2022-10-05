@@ -43,19 +43,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void syncMessages(){
-
         Message[] messagesFromServer = messageRepository.getMessagesFromServer(Long.parseLong(Config.currentUser.getUserId()));
         initRecyclerView(messagesFromServer);
     }
 
     private void initRecyclerView(Message[] messagesFromServer){
-        ArrayList<String> strings = new ArrayList<>();
-        strings.add("aaaaa");
-        strings.add("dff");
-        strings.add("dff");
-        strings.add("dff");
-        strings.add("dff");
-
         messagesContainer= findViewById(R.id.recyclerView);
         RecyclerViewAdapter recyclerViewAdapter=new RecyclerViewAdapter(messageService.getMessageContent(messagesFromServer),this);
         messagesContainer.setAdapter(recyclerViewAdapter);
