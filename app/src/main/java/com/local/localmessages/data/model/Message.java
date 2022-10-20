@@ -77,4 +77,16 @@ public class Message implements Serializable {
     public void setTime(LocalTime time) {
         this.time = time;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"id\":\"" + id +
+                "\", \"messageContent\":\"" + messageContent + '\"' +
+                ", \"userId\":\"" + userId +
+                "\", fromUser\":\"" + fromUser +
+                "\", \"date\":\"" + date +
+                "\", \"time\":\"" + time +
+                "\"}";
+    }
 }

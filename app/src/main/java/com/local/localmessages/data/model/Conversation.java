@@ -9,7 +9,7 @@ import java.util.Set;
 public class Conversation implements Serializable {
     private List<Message> messagesInConversation;
 
-    public Conversation(ArrayList<Message> messagesInConversation) {
+    public Conversation(List<Message> messagesInConversation) {
         this.messagesInConversation= messagesInConversation;
     }
 
@@ -23,5 +23,12 @@ public class Conversation implements Serializable {
 
     public void addMessage(Message message){
         messagesInConversation.add(message);
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"messagesInConversation\":\"" + messagesInConversation +
+                "\"}";
     }
 }

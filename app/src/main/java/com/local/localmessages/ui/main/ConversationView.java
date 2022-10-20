@@ -23,6 +23,8 @@ import com.local.localmessages.services.MessageService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ConversationView extends AppCompatActivity {
@@ -35,6 +37,7 @@ public class ConversationView extends AppCompatActivity {
     private TextInputEditText textInputEditText;
     private static Long messageId=0l;
     private static Long conversationWithUserId=0l;
+    private static List<Message> messagesList=new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,7 @@ public class ConversationView extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), MainActivity.class);
+                if(messagesList.size()>0)MessageService.saveMessagesToFile(messagesList);
                 startActivity(intent);
             }
         });
@@ -70,14 +74,16 @@ public class ConversationView extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
-
                 currentConversation.getMessagesInConversation().stream().forEach(message -> {
                     if(ConversationView.messageId<message.getId())
                         ConversationView.messageId=message.getId();
                 });
-                MessageRepository.setMessage(new Message(ConversationView.messageId,
+
+                Message messageToSave= new Message(ConversationView.messageId,
                         textInputEditText.getText().toString(), Long.parseLong(Config.currentUser.getUserId()),
-                        conversationWithUserId, LocalDate.now(), LocalTime.now()),view.getContext());
+                conversationWithUserId, LocalDate.now(), LocalTime.now());
+                messagesList.add(messageToSave);
+                MessageRepository.setMessage(messageToSave,view.getContext());
                 textInputEditText.setText("");
             }
         });
