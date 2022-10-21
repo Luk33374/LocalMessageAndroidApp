@@ -47,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         final EditText usernameEditText = binding.username;
         final EditText passwordEditText = binding.password;
         final Button loginButton = binding.login;
+        final Button registerButton = binding.registry;
         final ProgressBar loadingProgressBar = binding.loading;
 
         loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
@@ -56,6 +57,7 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
                 loginButton.setEnabled(loginFormState.isDataValid());
+                registerButton.setEnabled(loginFormState.isDataValid());
                 if (loginFormState.getUsernameError() != null) {
                     usernameEditText.setError(getString(loginFormState.getUsernameError()));
                 }
@@ -123,6 +125,19 @@ public class LoginActivity extends AppCompatActivity {
                 loginViewModel.login(usernameEditText.getText().toString(),
                         passwordEditText.getText().toString());
                 if(loginViewModel.loggedIn)changeToWelcomeScreen();
+            }
+        });
+
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                loadingProgressBar.setVisibility(View.VISIBLE);
+                String response=loginViewModel.registry(usernameEditText.getText().toString(),
+                        passwordEditText.getText().toString());
+                loadingProgressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
+                usernameEditText.setText("");
+                passwordEditText.setText("");
             }
         });
     }

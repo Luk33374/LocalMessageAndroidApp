@@ -43,6 +43,10 @@ public class LoginViewModel extends ViewModel {
         }
     }
 
+    public String registry(String username, String password) {
+        return loginRepository.registry(username,password);
+    }
+
     public void loginDataChanged(String username, String password) {
         if (!isUserNameValid(username)) {
             loginFormState.setValue(new LoginFormState(R.string.invalid_username, null));
