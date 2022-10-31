@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -23,12 +24,14 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView messagesContainer;
     private  TextView userName;
     private Button refresh;
+    private Button newConversation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         userName= findViewById(R.id.userName);
+        newConversation=findViewById(R.id.newConversation);
         refresh= findViewById(R.id.refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,8 +41,22 @@ public class MainActivity extends AppCompatActivity {
                 messagesContainer.setAdapter(recyclerViewAdapter);
             }
         });
+
+        newConversation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), NewConversationView.class);
+                startActivity(intent);
+            }
+        });
         userName.setText("You are logged in as: "+Config.currentUser.getDisplayName()+" user");
         syncMessages();
+    }
+
+    @Override
+    protected void onDestroy() {
+        MessageService.saveMessagesToFile();
+        super.onDestroy();
     }
 
     private void syncMessages(){

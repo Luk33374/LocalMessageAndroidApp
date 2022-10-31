@@ -1,6 +1,5 @@
 package com.local.localmessages.services;
 
-import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 
@@ -15,21 +14,16 @@ import com.local.localmessages.data.model.Conversation;
 import com.local.localmessages.data.model.Message;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -38,6 +32,7 @@ public class MessageService {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public ArrayList<String> getMessageContent(Message[] messages){
         Map<Long, Conversation> conversations=getMessagesFromFile();
+        if(conversations.size()>2&&conversations.get(0l)!=null)conversations.remove(0l);
         ArrayList<String> messageContent;
         for (int i=0;i<messages.length;i++){
 
@@ -77,6 +72,12 @@ public class MessageService {
         return null;
     }
 
+    public Conversation getConversationWithUser(Long userId){
+        Set<Long> keys = Config.usersConversation.keySet();
+        if (keys.contains(userId))return Config.usersConversation.get(userId);
+        else return new Conversation(new ArrayList<Message>());
+    }
+
     public String getUserFromId(Long id){
         return messageRepository.getUserWithId(id);
     }
@@ -97,8 +98,9 @@ public class MessageService {
         List<Message> messagesInConversation = conversation.getMessagesInConversation();
         Message messageFirst=messagesInConversation.stream().findFirst().get();
         for (Message message: messagesInConversation){
-            if(messageFirst.getDate().isBefore(message.getDate())||messageFirst.getDate().isEqual(message.getDate())){
-                if(messageFirst.getTime().isBefore(message.getTime())){
+            if(messageFirst.getDate().isBefore(message.getDate())){
+                messageFirst=message;
+                if(messageFirst.getDate().isEqual(message.getDate())&&messageFirst.getTime().isBefore(message.getTime())){
                     messageFirst=message;
                 }
             }
@@ -157,52 +159,6 @@ public class MessageService {
         return new Conversation(messageList);
     }
 
-//    private Map splitJsonAndConvert(String json){
-//        Map<Long,Conversation> loadedConversations=new HashMap<>();
-//        ObjectMapper mapper = new ObjectMapper()
-//                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-//        int lastBracketPosition=0;
-//        int lastEqualSignPosition=0;
-//        int previousEqualSignPosition=0;
-//        boolean bracketFind=false;
-//        boolean equalSignFind=false;
-//        boolean firstLongIndexFind=false;
-//        String outputJson="";
-//        Long userIndex=0l;
-//        for(int i=0;i<json.length();i++){
-//            if(json.charAt(i)=='{'){
-//                lastBracketPosition=i;
-//                bracketFind=true;
-//            }
-//            if(json.charAt(i)=='='){
-//                lastEqualSignPosition=i;
-//                equalSignFind=true;
-//            }
-//            if(equalSignFind&&bracketFind){
-//                equalSignFind=false;
-//                bracketFind=false;
-//                if(!firstLongIndexFind){
-//                    firstLongIndexFind=true;
-//                    String convIndexString=json.substring(lastBracketPosition+1,lastEqualSignPosition);
-//                    outputJson=outputJson+json.substring(previousEqualSignPosition,lastBracketPosition);
-//                    outputJson=outputJson+"\""+convIndexString+"\":";
-//                    previousEqualSignPosition=lastEqualSignPosition;
-//                }else {
-//                    outputJson=outputJson+json.substring(previousEqualSignPosition+1,lastBracketPosition);
-//                    firstLongIndexFind=false;
-//                }
-//            }
-//        }
-//        outputJson="{"+outputJson+json.substring(previousEqualSignPosition+1,json.length());
-//        try {
-//            loadedConversations=mapper.readValue(outputJson,HashMap.class);
-//            return loadedConversations;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return loadedConversations;
-//        }
-//    }
-
     private void saveMessagesToFile(@NonNull Map conversations){
         ObjectMapper mapper=new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);;
@@ -218,15 +174,8 @@ public class MessageService {
         }
     }
 
-    public static void saveMessagesToFile(@NonNull List<Message> messages){
-        Map<Long, Conversation> conversations = getMessagesFromFile();
-        for (Message message: messages) {
-            if (conversations.get(message.getUserId()) != null)
-                conversations.get(message.getUserId())
-                        .addMessage(message);
-            else conversations.get(message.getFromUser())
-                    .addMessage(message);
-        }
+    public static void saveMessagesToFile(){
+        Map<Long, Conversation> conversations = Config.usersConversation;
         ObjectMapper mapper=new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

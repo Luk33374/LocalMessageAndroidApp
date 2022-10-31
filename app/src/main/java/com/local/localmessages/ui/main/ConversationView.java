@@ -37,11 +37,12 @@ public class ConversationView extends AppCompatActivity {
     private TextInputEditText textInputEditText;
     private static Long messageId=0l;
     private static Long conversationWithUserId=0l;
-    private static List<Message> messagesList=new ArrayList<>();
+    private static List<Message> messagesList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        messagesList=new ArrayList<>();
         setContentView(R.layout.conversation_view);
         backButton=findViewById(R.id.backButton);
         sentMessageButton=findViewById(R.id.sendMessageButton);
@@ -50,12 +51,18 @@ public class ConversationView extends AppCompatActivity {
 
         Intent intent=getIntent();
         currentConversation=(Conversation) intent.getSerializableExtra("Conversation");
+        Long userId=null;
+        try {
+            userId=(Long) intent.getSerializableExtra("UserId");
+        }catch (Exception e){}
         RecyclerViewAdapterForConversation adapter=new RecyclerViewAdapterForConversation(this,
                 currentConversation);
 
         conversationWithUser= findViewById(R.id.userName);
-        conversationWithUserId=currentConversation
-                .getMessagesInConversation().stream().findFirst().get().getFromUser();
+        if(userId==null) {
+            conversationWithUserId = currentConversation
+                    .getMessagesInConversation().stream().findFirst().get().getFromUser();
+        }else conversationWithUserId=userId;
         conversationWithUser.setText(messageService.getUserFromId(conversationWithUserId));
         messagesContainer= findViewById(R.id.conversation);
         messagesContainer.setAdapter(adapter);
@@ -65,7 +72,7 @@ public class ConversationView extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), MainActivity.class);
-                if(messagesList.size()>0)MessageService.saveMessagesToFile(messagesList);
+                if(messagesList.size()>0)MessageService.saveMessagesToFile();
                 startActivity(intent);
             }
         });
@@ -93,7 +100,13 @@ public class ConversationView extends AppCompatActivity {
         RecyclerViewAdapterForConversation adapter=new RecyclerViewAdapterForConversation(mContext,
                 currentConversation);
         messagesContainer.setAdapter(adapter);
-        Config.usersConversation.get(conversationWithUserId).addMessage(message);
+        if(Config.usersConversation.get(conversationWithUserId)==null){
+            List<Message> singleMessageList=new ArrayList<>();
+            singleMessageList.add(message);
+            Config.usersConversation.put(conversationWithUserId,new Conversation(singleMessageList));
+        }else {
+            Config.usersConversation.get(conversationWithUserId).addMessage(message);
+        }
     }
 
 }
