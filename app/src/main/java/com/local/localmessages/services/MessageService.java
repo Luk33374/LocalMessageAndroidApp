@@ -99,10 +99,10 @@ public class MessageService {
         Message messageFirst=messagesInConversation.stream().findFirst().get();
         for (Message message: messagesInConversation){
             if(messageFirst.getDate().isBefore(message.getDate())){
-                messageFirst=message;
-                if(messageFirst.getDate().isEqual(message.getDate())&&messageFirst.getTime().isBefore(message.getTime())){
-                    messageFirst=message;
-                }
+                messageFirst = message;
+            }
+            if(messageFirst.getDate().isEqual(message.getDate())&&messageFirst.getTime().isBefore(message.getTime())){
+                messageFirst = message;
             }
         }
         return messageFirst.getMessageContent();
